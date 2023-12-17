@@ -4,6 +4,9 @@
 StoryAPI
 # Default URL
 http://localhost:5222/swagger/index.html
+# Project Information
+WebAPI- .net core - C#, Get 200 storylist from  the GetMethod (GetHackerStories - need to assign default pageno- 1 , pagesize is dynamic any from 1 to max...), 1) Code List coming from ( https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty) 2) Per Code will get details from (https://hacker-news.firebaseio.com/v0/item/38665911.json?print=pretty)
+
 # Get - GetHackerStories ( call two api internally to get storylist according to code lists)
 http://localhost:5222/api/HackerStoryAPI/GetHackerStories?pageNumber=1&pageSize=200
 
