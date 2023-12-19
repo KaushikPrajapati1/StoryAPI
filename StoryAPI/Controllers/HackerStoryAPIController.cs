@@ -35,15 +35,13 @@ namespace StoryAPI.Controllers
             return stuff;
         }
 
-
-
         [HttpGet]
         //[ActionName("Post02")]
-        public async Task<PagingParameterModel> GetHackerStories(int pageNumber, int pageSize)
+        public async Task<PagingParameterModel> GetHackerStories(int pageSize)
         {
             PagingParameterModel paginationMetadata;
             paginationMetadata =
-        await hackerStoryRepository.GetHackerStoriesByMemoryCache(pageNumber, pageSize);
+        await hackerStoryRepository.GetHackerStoriesByMemoryCache(pageSize);
 
             return (paginationMetadata);
         }

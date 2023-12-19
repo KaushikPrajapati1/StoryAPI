@@ -1,11 +1,13 @@
 ﻿
 using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Net.Http;
 using System.Text;
 
 namespace StoryAPI.Repository
 {
-    public class HackerStoryRepository :IHackerStoryRepository
+    public class HackerStoryRepository : IHackerStoryRepository
     {
         private readonly IMemoryCache _memoryCache;
         public HackerStoryRepository(IMemoryCache memoryCache)
@@ -18,9 +20,10 @@ namespace StoryAPI.Repository
             return stuff;
         }
 
-        public async Task<PagingParameterModel> GetHackerStoriesByMemoryCache(int pageNumber, int pageSize)
+        public async Task<PagingParameterModel> GetHackerStoriesByMemoryCache(int pageSize)
         {
             var cacheKey = "storyist";
+            var pageNumber = 1;
             PagingParameterModel paginationMetadata;
             if (_memoryCache.TryGetValue(cacheKey, out paginationMetadata))
             {
@@ -36,7 +39,7 @@ namespace StoryAPI.Repository
             await GetHackerStories(pageNumber, pageSize);
                 var cacheExpiryOptions = new MemoryCacheEntryOptions
                 {
-                    AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(180),
+                   AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(180),
                     //AbsoluteExpiration = DateTime.Now.AddSeconds(300),
                     //Priority = CacheItemPriority.High,
                     //SlidingExpiration = TimeSpan.FromSeconds(20)
@@ -47,14 +50,15 @@ namespace StoryAPI.Repository
         }
         public async Task<PagingParameterModel> GetHackerStories(int pageNumber, int pageSize)
         {
-            
+
             List<int> reservationList = new List<int>();
             List<HackerStory> storyList = new List<HackerStory>();
             PagingParameterModel paginationMetadata = null;
-            
+
             using (var httpClient = new HttpClient() { Timeout = TimeSpan.FromMinutes(20) })
             {
-                using (var response = await httpClient.GetAsync(" https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty"))
+                //   using (var response = await httpClient.GetAsync(" https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty"))
+                using (var response = await httpClient.GetAsync(" https://hacker-news.firebaseio.com/v0/newstories.json"))
                 {
                     string apiResponse = await response.Content.ReadAsStringAsync();
                     //dynamic dObject = JObject.Parse(apiResponse);
@@ -88,40 +92,60 @@ namespace StoryAPI.Repository
 
                     // Setting Header  
                     //  HttpContext.Current.Response.Headers.Add("Paging-Headers", JsonConvert.SerializeObject(paginationMetadata));
+                    var tasks = new List<Task<HackerStory>>();
+
                     StringBuilder strappend = new StringBuilder();
-                    strappend.Append("[");
+                 //   strappend.Append("[");
                     foreach (var item in items)
                     {
+                       
                         using (var httpClient1 = new HttpClient())
                         {
-                            var strUrl = "https://hacker-news.firebaseio.com/v0/item/" + item.ToString() + ".json?print=pretty";
-                            using (var response1 = await httpClient1.GetAsync(strUrl))
-                            {
-                                string apiResponse1 = await response1.Content.ReadAsStringAsync();
-                                strappend.Append(apiResponse1 + ",");
-                                //dynamic dObject = JObject.Parse(apiResponse);
-
-                            }
+                            tasks.Add(GetHackerStoryId(item.ToString()));
                         }
                     }
-                    strappend.Append("]");
-                    storyList = JsonConvert.DeserializeObject<List<HackerStory>>(strappend.ToString());
 
-                        paginationMetadata = new PagingParameterModel()
-                        {
-                            totalCount = TotalCount,
-                            pageSize = PageSize,
-                            currentPage = CurrentPage,
-                            totalPages = TotalPages,
-                            previousPage = previousPage,
-                            nextPage = nextPage,
-                            hackerstory = storyList
-                        };
+                    foreach(var task in await Task.WhenAll(tasks))
+                    {
+                        storyList.Add(task);
+                    }
+                   
+                    paginationMetadata = new PagingParameterModel()
+                    {
+                        totalCount = TotalCount,
+                        pageSize = PageSize,
+                        currentPage = CurrentPage,
+                        totalPages = TotalPages,
+                        previousPage = previousPage,
+                        nextPage = nextPage,
+                        hackerstory = storyList
+                    };
                 }
             }
 
-        
+
             return (paginationMetadata);
         }
+     
+
+        public async Task<HackerStory> GetHackerStoryId(string Id)
+        {
+            HackerStory hackerStory = null;
+            using (var httpClient = new HttpClient())
+            {
+                //StringBuilder strappend = new StringBuilder();
+               
+                var strUrl = "https://hacker-news.firebaseio.com/v0/item/" + Id.ToString() + ".json?print=pretty";
+                using (var response1 = await httpClient.GetAsync(strUrl))
+                {
+                    string apiResponse1 = await response1.Content.ReadAsStringAsync();
+                    hackerStory = JsonConvert.DeserializeObject<HackerStory>(apiResponse1);
+                }
+            // var  strFinal = strappend.ToString().Replace("{", "[").Replace("}", "]");
+                
+            }
+            return (hackerStory);
+        }
+        
     }
 }

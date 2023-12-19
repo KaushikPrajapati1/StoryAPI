@@ -31,7 +31,7 @@ namespace StoryTest
                 var controller = new StoryAPI.Controllers.HackerStoryAPIController(hackerStoryRepository,cache);
 
                 //Act  
-                var data = await controller.GetHackerStories(1, 5);
+                var data = await controller.GetHackerStories(5);
 
                 //Assert  
                 Assert.IsType<StoryAPI.PagingParameterModel>(data);
@@ -51,7 +51,7 @@ namespace StoryTest
                 //Act  
              
                
-                var data = await controller.GetHackerStories(1, 5);
+                var data = await controller.GetHackerStories(5);
 
                 //Assert  
                 
@@ -68,7 +68,7 @@ namespace StoryTest
                 var controller = new StoryAPI.Controllers.HackerStoryAPIController(hackerStoryRepository, cache);
 
                 //Act  
-                var data = controller.GetHackerStories(0, 1);
+                var data = controller.GetHackerStories(1);
                 data = null;
 
                 if (data != null)

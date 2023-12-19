@@ -2,21 +2,12 @@
 {
     public class PagingParameterModel
     {
-        const int maxPageSize = 200;
+        //const int maxPageSize = 300;
 
         public int pageNumber { get; set; } = 1;
 
-        private int _pageSize { get; set; } = 10;
-
-        public int pageSize
-        {
-
-            get { return _pageSize; }
-            set
-            {
-                _pageSize = (value > maxPageSize) ? maxPageSize : value;
-            }
-        }
+        public int pageSize { get; set; }
+      
         public int totalCount { get; set; }
         public int currentPage { get; set;  }
         public int totalPages { get; set; }
