@@ -36,9 +36,10 @@ namespace StoryAPI.Repository
             await GetHackerStories(pageNumber, pageSize);
                 var cacheExpiryOptions = new MemoryCacheEntryOptions
                 {
-                    AbsoluteExpiration = DateTime.Now.AddSeconds(300),
-                    Priority = CacheItemPriority.High,
-                    SlidingExpiration = TimeSpan.FromSeconds(20)
+                    AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(180),
+                    //AbsoluteExpiration = DateTime.Now.AddSeconds(300),
+                    //Priority = CacheItemPriority.High,
+                    //SlidingExpiration = TimeSpan.FromSeconds(20)
                 };
                 _memoryCache.Set(cacheKey, paginationMetadata, cacheExpiryOptions);
             }
